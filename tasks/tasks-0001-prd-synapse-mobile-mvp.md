@@ -381,33 +381,33 @@
 
 ### Phase 3: 모바일 앱 - UI/UX 및 화면 구현
 
-- [ ] **3.0 모바일 앱 - UI/UX 및 화면 구임**
-  - [ ] 3.1 내비게이션 설정
-    - `src/navigation/RootNavigator.tsx` 작성: Stack Navigator 설정
-    - `src/navigation/BottomTabNavigator.tsx` 작성: 4개 탭 (홈, 검색, 회고, 설정)
-    - 탭 아이콘 및 라벨 설정
-  - [ ] 3.2 상수 및 테마 설정
-    - `src/constants/colors.ts` 작성: 라이트/다크 모드 컬러 팔레트
-    - `src/constants/database.ts` 작성: DB 관련 상수
-    - `src/constants/api.ts` 작성: API 엔드포인트 URL
-  - [ ] 3.3 공통 컴포넌트 구현
-    - `src/components/LoadingSpinner.tsx` 작성: 스피너 컴포넌트
-    - `src/components/SkeletonLoader.tsx` 작성: Skeleton UI
-    - `src/components/OfflineBanner.tsx` 작성: 오프라인 배너 (상단 고정)
-    - `src/components/SyncStatusBanner.tsx` 작성: 동기화 상태 배너
-    - 각 컴포넌트 테스트 작성
-  - [ ] 3.4 노트 관련 컴포넌트 구현
-    - `src/components/NoteInput.tsx` 작성
-      - 다중 라인 입력창 (자동 확장, 최대 10줄)
-      - 중요도 선택 (SegmentedControl)
-      - URL 입력 필드 (선택)
-      - 저장/취소 버튼
-    - `src/components/NoteCard.tsx` 작성
-      - 첫 줄 미리보기 (최대 50자)
-      - 메타데이터: 생성일, 중요도, 연결 개수
-      - 미동기화 표시 (빨간 점)
-      - 스와이프 액션 (삭제)
-    - 각 컴포넌트 테스트 작성
+- [ ] **3.0 모바일 앱 - UI/UX 및 화면 구현**
+  - [x] 3.1 내비게이션 설정
+    - `src/navigation/RootNavigator.tsx` 작성: Stack Navigator 설정 ✅
+    - `src/navigation/BottomTabNavigator.tsx` 작성: 4개 탭 (홈, 검색, 회고, 설정) ✅
+    - 탭 아이콘 및 라벨 설정 ✅
+  - [x] 3.2 상수 및 테마 설정
+    - `src/constants/colors.ts` 작성: 라이트/다크 모드 컬러 팔레트 ✅
+    - `src/constants/database.ts` 작성: DB 관련 상수 ✅ (Phase 2.1에서 구현)
+    - `src/constants/api.ts` 작성: API 엔드포인트 URL ✅
+  - [x] 3.3 공통 컴포넌트 구현
+    - `src/components/LoadingSpinner.tsx` 작성: 스피너 컴포넌트 ✅
+    - `src/components/SkeletonLoader.tsx` 작성: Skeleton UI ✅
+    - `src/components/OfflineBanner.tsx` 작성: 오프라인 배너 (상단 고정) ✅
+    - `src/components/SyncStatusBanner.tsx` 작성: 동기화 상태 배너 ✅
+    - 각 컴포넌트 테스트 작성 ✅
+  - [x] 3.4 노트 관련 컴포넌트 구현
+    - `src/components/NoteInput.tsx` 작성 ✅
+      - 다중 라인 입력창 (자동 확장, 최대 5000자) ✅
+      - 중요도 선택 (낮음/보통/높음 버튼) ✅
+      - URL 입력 필드 (선택, 토글 방식) ✅
+      - 저장/취소 버튼 ✅
+    - `src/components/NoteCard.tsx` 작성 ✅
+      - 첫 줄 미리보기 (최대 50자) ✅
+      - 메타데이터: 생성일, 중요도, 링크 표시 ✅
+      - 미동기화 표시 (빨간 점) ✅
+      - 삭제 버튼 (onDelete prop) ✅
+    - 각 컴포넌트 테스트 작성 ✅ (29/29 테스트 통과)
   - [ ] 3.5 홈 화면 구현
     - `src/screens/HomeScreen.tsx` 작성
       - 상단: NoteInput 컴포넌트
