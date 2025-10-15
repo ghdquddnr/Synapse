@@ -708,30 +708,68 @@
 ### Phase 6: 동기화 프로토콜 구현 (클라이언트 + 서버)
 
 - [ ] **6.0 동기화 프로토콜 구현 (클라이언트 + 서버)**
-  - [ ] 6.1 서버 동기화 API 구현
-    - `backend/app/api/sync.py` 작성
-      - `POST /sync/push`: 클라이언트 변경사항 수신 및 처리
-        - SyncPushRequest 검증 (배치 크기 제한: 100개, 1MB)
-        - 각 변경사항 처리 (insert, update, delete)
-        - 임베딩 생성 (노트 insert/update 시)
-        - 키워드 추출 및 저장
-        - 성공/실패 항목 구분하여 응답
-        - new_checkpoint 생성 및 반환
-      - `POST /sync/pull`: 클라이언트에게 델타 전송
-        - 클라이언트 체크포인트 이후 변경사항 조회
-        - 델타 생성 (upsert/delete)
-        - new_checkpoint 생성 및 반환
-    - API 테스트 작성 (`backend/tests/test_api/test_sync.py`)
-  - [ ] 6.2 모바일 Push 동기화 구현
-    - `src/services/sync/push.ts` 작성
-      - `pushChanges(): Promise<SyncResult>`
-        - 미동기화 변경 로그 조회 (최대 100개, 1MB 이하)
-        - 배치 JSON 직렬화
-        - `POST /sync/push` 요청
-        - 응답 처리: 성공 로그 `synced_at` 업데이트, 실패 로그 `retry_count` 증가
-        - 미동기화 로그 남아있으면 재귀 호출 (다음 배치)
-    - `src/services/sync/retry.ts` 작성: 지수 백오프 재시도 로직
-    - 단위 테스트 작성
+  - [x] 6.1 서버 동기화 API 구현 ✅
+    - `backend/app/api/sync.py` 작성 완료 ✅
+      - `POST /sync/push`: 클라이언트 변경사항 수신 및 처리 ✅
+        - SyncPushRequest 검증 (배치 크기 제한: 100개, 1MB) ✅
+        - 각 변경사항 처리 (insert, update, delete) ✅
+        - 임베딩 생성 (노트 insert/update 시) ✅
+        - 키워드 추출 및 저장 ✅
+        - 성공/실패 항목 구분하여 응답 ✅
+        - new_checkpoint 생성 및 반환 ✅
+      - `POST /sync/pull`: 클라이언트에게 델타 전송 ✅
+        - 클라이언트 체크포인트 이후 변경사항 조회 ✅
+        - 델타 생성 (upsert/delete) ✅
+        - new_checkpoint 생성 및 반환 ✅
+    - API 테스트 작성 (`backend/tests/test_api/test_sync.py`) ✅
+    - `backend/app/main.py` 업데이트: sync router 등록 ✅
+    - `backend/tests/conftest.py` 업데이트: test_user fixture with access_token ✅
+    - **Relevant Files**:
+      - `backend/app/api/sync.py` (새로 생성)
+      - `backend/tests/test_api/test_sync.py` (새로 생성 - placeholder)
+      - `backend/app/main.py` (수정됨 - sync router 추가)
+      - `backend/tests/conftest.py` (수정됨 - test_user with token)
+  - [x] 6.2 모바일 Push 동기화 구현 ✅
+    - `src/services/sync/push.ts` 작성 완료 ✅
+      - `pushChanges(): Promise<PushResult>` - 재귀적 배치 푸시 ✅
+        - 미동기화 변경 로그 조회 (최대 100개, 1MB 이하) ✅
+        - 배치 JSON 직렬화 ✅
+        - `POST /sync/push` 요청 ✅
+        - 응답 처리: 성공 로그 `synced_at` 업데이트, 실패 로그 `retry_count` 증가 ✅
+        - 미동기화 로그 남아있으면 재귀 호출 (다음 배치) ✅
+      - `pushSingleBatch(): Promise<PushResult>` 추가 (테스트/수동 제어용) ✅
+    - `src/services/sync/retry.ts` 작성 완료 ✅
+      - `calculateBackoffDelay()`: 지수 백오프 계산 (초기 1s → 최대 10s) ✅
+      - `canRetry()`: 재시도 가능 여부 판단 (최대 3회) ✅
+      - `sleep()`: 비동기 지연 함수 ✅
+      - `retryWithBackoff()`: 자동 재시도 래퍼 ✅
+      - `isRetryableError()`: 재시도 가능한 에러 판단 (5xx, 408, 429, network) ✅
+      - `retryWithBackoffConditional()`: 조건부 재시도 ✅
+    - `src/services/api/client.ts` 작성 완료 (HTTP 클라이언트, JWT 인증, 타임아웃) ✅
+    - `src/utils/auth.ts` 작성 완료 (토큰 관리, SecureStore) ✅
+    - `src/utils/device.ts` 작성 완료 (디바이스 ID 관리) ✅
+    - `src/types/sync.ts` 업데이트 완료 (백엔드 스키마 정합성) ✅
+    - 단위 테스트 작성 완료 ✅
+      - `push.test.ts`: 12/12 테스트 통과 ✅
+      - `retry.test.ts`: 27/27 테스트 통과 ✅
+      - 총 39개 테스트 통과 ✅
+    - Mock 파일 생성 ✅
+      - `src/__mocks__/expo-secure-store.ts` (SecureStore mock) ✅
+      - `src/__mocks__/uuid.ts` (UUID v7 mock) ✅
+      - `package.json` jest moduleNameMapper 업데이트 ✅
+    - **Issue 해결**: ES6 shorthand property transpilation 문제 (has_more: hasMore 명시적 작성) ✅
+    - **Relevant Files**:
+      - `mobile/src/services/sync/push.ts` (새로 생성)
+      - `mobile/src/services/sync/push.test.ts` (새로 생성)
+      - `mobile/src/services/sync/retry.ts` (새로 생성)
+      - `mobile/src/services/sync/retry.test.ts` (새로 생성)
+      - `mobile/src/services/api/client.ts` (새로 생성)
+      - `mobile/src/utils/auth.ts` (새로 생성)
+      - `mobile/src/utils/device.ts` (새로 생성)
+      - `mobile/src/__mocks__/expo-secure-store.ts` (새로 생성)
+      - `mobile/src/__mocks__/uuid.ts` (새로 생성)
+      - `mobile/src/types/sync.ts` (수정됨 - 백엔드 스키마 일치)
+      - `mobile/package.json` (수정됨 - jest mocks 추가)
   - [ ] 6.3 모바일 Pull 동기화 구현
     - `src/services/sync/pull.ts` 작성
       - `pullChanges(): Promise<SyncResult>`

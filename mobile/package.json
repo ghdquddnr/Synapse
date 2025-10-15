@@ -57,7 +57,9 @@
     "preset": "jest-expo",
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1",
-      "^expo-sqlite$": "<rootDir>/src/__mocks__/expo-sqlite.ts"
+      "^expo-sqlite$": "<rootDir>/src/__mocks__/expo-sqlite.ts",
+      "^expo-secure-store$": "<rootDir>/src/__mocks__/expo-secure-store.ts",
+      "^uuid$": "<rootDir>/src/__mocks__/uuid.ts"
     },
     "transformIgnorePatterns": [
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)"

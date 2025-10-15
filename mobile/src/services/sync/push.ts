@@ -238,7 +238,7 @@ export async function pushSingleBatch(): Promise<PushResult> {
       success: true,
       pushed_count: response.success_count,
       failed_count: response.failure_count,
-      has_more,
+      has_more: hasMore,
     };
   } catch (error) {
     console.error('Push single batch failed:', error);
