@@ -20,7 +20,7 @@ export interface QueryResult {
 }
 
 export interface TransactionCallback {
-  (tx: SQLite.SQLTransactionAsync): void | Promise<void>;
+  (): void | Promise<void>;
 }
 
 export interface SchemaTable {
