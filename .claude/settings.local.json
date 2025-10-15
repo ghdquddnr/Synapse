@@ -1,10 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git push:*)",
+      "Bash(git commit:*)",
       "Bash(npm test:*)",
-      "Bash(npx jest:*)",
-      "Bash(cat:*)"
+      "Bash(python -m pytest --co -q)",
+      "Bash(python:*)",
+      "Bash(./venv/Scripts/pip install:*)",
+      "Bash(./venv/Scripts/pytest --co -q)",
+      "Bash(./venv/Scripts/pytest -xvs)",
+      "Bash(./venv/Scripts/pytest tests/test_api/test_sync.py -xvs)",
+      "Bash(./venv/Scripts/pytest tests/test_services/ --cov=app/services --cov-report=term)",
+      "Bash(./venv/Scripts/pytest tests/test_api/test_main.py tests/test_core/test_exceptions.py tests/test_core/test_logging.py -v --tb=short)",
+      "Bash(./venv/Scripts/pytest tests/test_integration/ -v --tb=short)",
+      "Bash(./venv/Scripts/pytest tests/test_integration/test_sync_flow.py::TestSyncIntegrationFlow::test_complete_sync_flow -xvs)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

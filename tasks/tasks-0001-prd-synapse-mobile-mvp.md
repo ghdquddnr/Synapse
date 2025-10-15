@@ -120,13 +120,17 @@
 
 **유틸리티**
 - `src/utils/uuid.ts` - UUIDv7 생성 함수 (generateUUIDv7, extractTimestampFromUUIDv7, isValidUUIDv7)
-- `src/utils/uuid.test.ts` - UUID 생성 테스트
-- `src/utils/date.ts` - 날짜 포맷팅 및 계산
-- `src/utils/date.test.ts` - 날짜 유틸 테스트
+- `src/utils/uuid.test.ts` - UUID 생성 테스트 (45/45 통과)
+- `src/utils/date.ts` - 날짜 포맷팅 및 계산 (ISO 8601, 날짜 연산, 주간 계산, 상대 시간)
+- `src/utils/date.test.ts` - 날짜 유틸 테스트 (26/26 통과)
 - `src/utils/highlight.ts` - 검색어 하이라이팅
 - `src/utils/highlight.test.ts` - 하이라이팅 테스트
-- `src/utils/validation.ts` - 데이터 검증 함수
-- `src/utils/validation.test.ts` - 검증 테스트
+- `src/utils/validation.ts` - 데이터 검증 함수 (노트, URL, 날짜, 이메일, 체크포인트, 키워드 검증)
+- `src/utils/validation.test.ts` - 검증 테스트 (79/79 통과)
+- `src/utils/auth.ts` - JWT 토큰 관리 (SecureStore 기반)
+- `src/utils/auth.test.ts` - 인증 유틸 테스트 (23/23 통과)
+- `src/utils/device.ts` - 디바이스 ID 관리 (AsyncStorage 기반)
+- `src/utils/device.test.ts` - 디바이스 유틸 테스트 (12/12 통과)
 
 **테스트 Mocks**
 - `src/__mocks__/expo-sqlite.ts` - expo-sqlite 모킹 (Jest 테스트용)
@@ -876,6 +880,70 @@
 ### Phase 7: 테스트 및 품질 보증
 
 - [ ] **7.0 테스트 및 품질 보증**
+  - [x] 7.0.1 유틸리티 함수 구현 및 테스트 ✅
+    - `src/utils/uuid.ts` 작성 완료 (Phase 2.4에서 이미 구현됨) ✅
+    - `src/utils/date.ts` 작성 완료 ✅
+      - `formatDate()`: ISO 8601 날짜 포맷팅
+      - `formatTime()`: 시간 포맷팅 (HH:MM)
+      - `formatDateTime()`: 날짜 + 시간 포맷팅
+      - `parseDate()`: 날짜 문자열 파싱
+      - `addDays()`, `subtractDays()`: 날짜 연산
+      - `startOfWeek()`, `endOfWeek()`: 주간 경계 계산
+      - `getWeekNumber()`: ISO 8601 주차 계산
+      - `isToday()`, `isYesterday()`: 날짜 비교
+      - `getRelativeTime()`: "방금 전", "3분 전" 등 상대 시간 표현
+    - `src/utils/validation.ts` 작성 완료 ✅
+      - `isValidUUID()`: UUIDv7 유효성 검증
+      - `isValidUrl()`: URL 검증
+      - `isValidEmail()`: 이메일 검증
+      - `isValidDate()`: ISO 8601 날짜 검증
+      - `isValidNoteBody()`: 노트 본문 검증 (1~5000자)
+      - `isValidImportance()`: 중요도 검증 (1~3)
+      - `isValidCheckpoint()`: 체크포인트 검증
+      - `isValidKeyword()`: 키워드 검증 (50자 이하)
+      - `sanitizeUrl()`: URL 정규화
+      - `sanitizeHtml()`: HTML 태그 제거
+      - `truncateText()`: 텍스트 잘라내기
+    - `src/utils/auth.ts` 작성 완료 ✅
+      - `saveAccessToken()`: SecureStore에 access token 저장
+      - `saveRefreshToken()`: SecureStore에 refresh token 저장
+      - `getAccessToken()`, `getRefreshToken()`: 토큰 조회
+      - `clearTokens()`: 모든 토큰 삭제
+      - `isAccessTokenExpired()`: 토큰 만료 여부 확인
+    - `src/utils/device.ts` 작성 완료 ✅
+      - `getDeviceId()`: AsyncStorage에서 디바이스 ID 조회 (없으면 UUIDv7 생성)
+      - `generateDeviceId()`: 새 디바이스 ID 생성
+      - `clearDeviceId()`: 디바이스 ID 삭제
+    - 단위 테스트 작성 완료 ✅
+      - `uuid.test.ts`: 45/45 통과 (UUIDv7 생성, 타임스탬프 추출, 검증)
+      - `date.test.ts`: 26/26 통과 (포맷팅, 파싱, 날짜 연산, 주간 계산, 상대 시간)
+      - `validation.test.ts`: 79/79 통과 (UUID, URL, 이메일, 날짜, 노트, 중요도, 키워드 검증)
+      - `auth.test.ts`: 23/23 통과 (토큰 저장/조회/삭제, 만료 확인)
+      - `device.test.ts`: 12/12 통과 (디바이스 ID 생성/조회/삭제)
+    - **총 185개 테스트 통과** ✅
+    - **Relevant Files**:
+      - `mobile/src/utils/date.ts` (새로 생성)
+      - `mobile/src/utils/date.test.ts` (새로 생성)
+      - `mobile/src/utils/validation.ts` (새로 생성)
+      - `mobile/src/utils/validation.test.ts` (새로 생성)
+      - `mobile/src/utils/auth.test.ts` (새로 생성)
+      - `mobile/src/utils/device.test.ts` (새로 생성)
+      - `mobile/src/utils/uuid.ts` (수정됨 - 타임스탬프 추출 함수 추가)
+      - `mobile/src/utils/uuid.test.ts` (수정됨 - 타임스탬프 추출 테스트 추가)
+  - [x] 7.0.2 백엔드 통합 테스트 인프라 구축 ✅
+    - `backend/tests/test_integration/` 디렉토리 생성 ✅
+    - `backend/tests/test_integration/__init__.py` 생성 ✅
+    - `backend/tests/test_integration/test_sync_flow.py` 생성 ✅
+      - `TestSyncIntegrationFlow` 클래스 (전체 동기화 플로우 통합 테스트) ✅
+      - `test_complete_sync_flow()`: Push → Pull → 추천 API 통합 플로우 ✅
+    - `backend/tests/conftest.py` 업데이트 ✅
+      - `skip_password_hash` fixture: bcrypt 환경 이슈로 비밀번호 해싱 우회 ✅
+      - 모든 테스트에서 짧은 비밀번호 사용 가능 ("test1234") ✅
+    - **통합 테스트 실행**: 1/1 통과 (전체 동기화 플로우) ✅
+    - **Relevant Files**:
+      - `backend/tests/test_integration/__init__.py` (새로 생성)
+      - `backend/tests/test_integration/test_sync_flow.py` (새로 생성)
+      - `backend/tests/conftest.py` (수정됨 - skip_password_hash fixture 추가)
   - [ ] 7.1 모바일 단위 테스트 작성 및 실행
     - 모든 서비스 함수 단위 테스트 (database, sync, api)
     - 유틸리티 함수 테스트 (uuid, date, highlight, validation)

@@ -10,6 +10,7 @@ from app.main import app
 from app.database import Base, get_db
 from app.models.user import User
 from app.core.security import hash_password
+from passlib.context import CryptContext
 
 
 # Create in-memory SQLite database for testing
@@ -21,6 +22,9 @@ engine = create_engine(
     poolclass=StaticPool,
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Test-only password context with simpler bcrypt rounds to avoid bcrypt bugs
+test_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=4)
 
 
 @pytest.fixture
@@ -80,10 +84,17 @@ def test_db():
 @pytest.fixture
 def test_user(db, client):
     """Test user fixture with access token"""
+    # Use a short password that won't trigger bcrypt's wrap bug
+    # bcrypt has issues in test environment, so we use minimal password
+    test_password = "testpass"
+
+    # Use test-only password context with lower rounds
+    hashed = test_pwd_context.hash(test_password)
+
     user = User(
         id="01234567-89ab-cdef-0123-456789abcdef",
         email="test@example.com",
-        hashed_password=hash_password("testpass123"),  # Shorter password to avoid bcrypt issues
+        hashed_password=hashed,
         is_active=True,
     )
     db.add(user)
@@ -95,7 +106,7 @@ def test_user(db, client):
         "/auth/login",
         json={
             "email": "test@example.com",
-            "password": "testpass123",
+            "password": test_password,
         },
     )
 
@@ -103,7 +114,7 @@ def test_user(db, client):
     return {
         "id": user.id,
         "email": user.email,
-        "password": "testpass123",
+        "password": test_password,
         "user_obj": user,
         "access_token": response.json()["access_token"] if response.status_code == 200 else None,
     }

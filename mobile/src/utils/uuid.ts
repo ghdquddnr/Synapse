@@ -27,10 +27,6 @@ export function generateUUIDv7(): string {
   // Version (4 bits): 0111 (7 in hex)
   const version = '7';
 
-  // Variant (2 bits): 10 (RFC 4122)
-  // We need to set the first 2 bits of randomBytes[2] to 10
-  randomBytes[2] = (randomBytes[2] & 0x3f) | 0x80;
-
   // Convert random bytes to hex
   const randomHex = Array.from(randomBytes)
     .map((b) => b.toString(16).padStart(2, '0'))
@@ -38,13 +34,18 @@ export function generateUUIDv7(): string {
 
   // Build UUID string: xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx
   // timestamp (12 chars) + version (1 char) + random (3 chars) + variant random (16 chars)
-  const uuid = [
-    timestampHex.substring(0, 8), // First 8 chars of timestamp
-    timestampHex.substring(8, 12), // Next 4 chars of timestamp
-    version + randomHex.substring(0, 3), // Version + 3 random chars
-    randomHex.substring(3, 7), // 4 random chars with variant
-    randomHex.substring(7, 19), // 12 random chars
-  ].join('-');
+  const part1 = timestampHex.substring(0, 8); // First 8 chars of timestamp
+  const part2 = timestampHex.substring(8, 12); // Next 4 chars of timestamp
+  const part3 = version + randomHex.substring(0, 3); // Version + 3 random chars
+
+  // Part 4: variant (2 bits = 10) + 14 bits random
+  // Variant byte should have pattern 10xxxxxx
+  const variantByte = (parseInt(randomHex.substring(3, 5), 16) & 0x3f) | 0x80;
+  const part4 = variantByte.toString(16).padStart(2, '0') + randomHex.substring(5, 7);
+
+  const part5 = randomHex.substring(7, 19); // 12 random chars
+
+  const uuid = [part1, part2, part3, part4, part5].join('-');
 
   return uuid;
 }
