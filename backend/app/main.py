@@ -183,12 +183,9 @@ async def health_check():
 
 
 # Register API routers
-from app.api import auth, recommend, reports
+from app.api import auth, recommend, reports, sync
 
 app.include_router(auth.router)
 app.include_router(recommend.router)
 app.include_router(reports.router)
-
-# TODO: Register remaining routers
-# from app.api import sync
-# app.include_router(sync.router, prefix="/sync", tags=["sync"])
+app.include_router(sync.router)

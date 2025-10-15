@@ -78,8 +78,8 @@ def test_db():
 
 
 @pytest.fixture
-def test_user(db):
-    """Test user fixture"""
+def test_user(db, client):
+    """Test user fixture with access token"""
     user = User(
         id="01234567-89ab-cdef-0123-456789abcdef",
         email="test@example.com",
@@ -90,6 +90,20 @@ def test_user(db):
     db.commit()
     db.refresh(user)
 
-    # Add plain password for login tests
-    user.plain_password = "testpass123"
-    return user
+    # Login to get access token
+    response = client.post(
+        "/auth/login",
+        json={
+            "email": "test@example.com",
+            "password": "testpass123",
+        },
+    )
+
+    # Return dict with user info and token
+    return {
+        "id": user.id,
+        "email": user.email,
+        "password": "testpass123",
+        "user_obj": user,
+        "access_token": response.json()["access_token"] if response.status_code == 200 else None,
+    }
