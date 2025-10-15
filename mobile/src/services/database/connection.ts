@@ -143,6 +143,9 @@ class DatabaseManager {
 // Export singleton instance
 export const dbManager = DatabaseManager.getInstance();
 
+// Export DatabaseManager class for testing
+export { DatabaseManager };
+
 // Convenience function to get database
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   return dbManager.getDatabase();

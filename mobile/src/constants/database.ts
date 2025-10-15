@@ -27,9 +27,14 @@ export const IDX_RELATIONS_TO = 'idx_relations_to';
 
 // Sync constants
 export const SYNC_CHECKPOINT_KEY = 'checkpoint';
-export const MAX_CHANGE_LOG_SIZE = 10000;
-export const SYNC_BATCH_SIZE = 100;
-export const SYNC_MAX_PAYLOAD_SIZE = 1024 * 1024; // 1MB
+export const SYNC_BATCH_MAX_SIZE = 100; // Max entries per sync batch
+export const SYNC_BATCH_SIZE = 100; // Deprecated, use SYNC_BATCH_MAX_SIZE
+export const SYNC_BATCH_MAX_BYTES = 1024 * 1024; // 1MB max payload size
+export const SYNC_MAX_PAYLOAD_SIZE = 1024 * 1024; // Deprecated, use SYNC_BATCH_MAX_BYTES
+export const SYNC_MAX_RETRY_COUNT = 3; // Max retry attempts before marking as failed
+export const SYNC_QUEUE_WARNING_SIZE = 8000; // Warning threshold (80% of max)
+export const SYNC_QUEUE_MAX_SIZE = 10000; // Max change log entries before read-only mode
+export const MAX_CHANGE_LOG_SIZE = 10000; // Deprecated, use SYNC_QUEUE_MAX_SIZE
 
 // Search constants
 export const MAX_SEARCH_HISTORY = 50;

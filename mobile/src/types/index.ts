@@ -21,7 +21,7 @@ export interface Keyword {
 export interface NoteKeyword {
   note_id: string;
   keyword_id: number;
-  weight: number; // TF-IDF score
+  score: number; // TF-IDF score
   source: 'ai' | 'manual';
   created_at: string;
 }
@@ -37,9 +37,8 @@ export interface Relation {
 }
 
 export interface Reflection {
-  id: string; // UUIDv7
+  date: string; // YYYY-MM-DD (primary key)
   content: string;
-  date: string; // YYYY-MM-DD
   created_at: string;
   updated_at: string;
 }
@@ -54,15 +53,15 @@ export interface WeeklyReport {
 
 export interface ChangeLogEntry {
   id: number;
-  entity_type: 'note' | 'relation' | 'reflection' | 'note_keyword';
+  entity_type: string;
   entity_id: string;
   operation: 'insert' | 'update' | 'delete';
-  payload: string; // JSON stringified entity data
-  client_timestamp: string; // ISO 8601
-  synced_at?: string;
+  payload: string | Record<string, unknown>; // JSON stringified entity data or parsed object
+  priority: number; // Sync priority (1-3, higher = more urgent)
+  created_at: string; // ISO 8601
+  synced_at: string | null; // ISO 8601, null if not synced
   retry_count: number;
-  last_error?: string;
-  created_at: string;
+  last_error: string | null;
 }
 
 export interface SyncState {
