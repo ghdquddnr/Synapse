@@ -76,6 +76,12 @@ export interface SearchHistoryEntry {
   searched_at: string;
 }
 
+export interface SearchResult {
+  note: Note;
+  snippet: string;
+  rank: number;
+}
+
 // Input types for creating entities
 export interface CreateNoteInput {
   body: string;

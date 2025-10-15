@@ -436,15 +436,23 @@
       - `mobile/src/hooks/useRelations.ts` (새로 생성)
       - `mobile/src/navigation/RootNavigator.tsx` (수정됨)
       - `mobile/src/screens/HomeScreen.tsx` (수정됨)
-  - [ ] 3.7 검색 화면 구현
-    - `src/screens/SearchScreen.tsx` 작성
-      - 상단: SearchBar 컴포넌트
-      - 검색 전: 최근 검색어 목록
-      - 검색 후: 검색 결과 목록 (하이라이팅)
-    - `src/components/SearchBar.tsx` 작성: 검색 입력창 (실시간 검색)
-    - `src/hooks/useSearch.ts` 작성: 검색 hooks
-    - `src/utils/highlight.ts` 작성: 검색어 하이라이팅 함수
-    - 화면 테스트 작성
+  - [x] 3.7 검색 화면 구현
+    - `src/screens/SearchScreen.tsx` 작성 ✅
+      - 상단: SearchBar 컴포넌트 ✅
+      - 검색 전: 최근 검색어 목록 ✅
+      - 검색 후: 검색 결과 목록 (하이라이팅) ✅
+    - `src/components/SearchBar.tsx` 작성: 검색 입력창 (실시간 검색) ✅
+    - `src/hooks/useSearch.ts` 작성: 검색 hooks ✅
+    - `src/utils/highlight.ts` 작성: 검색어 하이라이팅 함수 ✅
+    - 화면 테스트 작성 ✅ (27/27 테스트 통과)
+    - **Relevant Files**:
+      - `mobile/src/screens/SearchScreen.tsx` (수정됨 - 플레이스홀더에서 완전 구현으로)
+      - `mobile/src/screens/SearchScreen.test.tsx` (새로 생성)
+      - `mobile/src/components/SearchBar.tsx` (새로 생성)
+      - `mobile/src/hooks/useSearch.ts` (새로 생성)
+      - `mobile/src/utils/highlight.ts` (새로 생성)
+      - `mobile/src/utils/highlight.test.ts` (새로 생성)
+      - `mobile/src/types/index.ts` (수정됨 - SearchResult 타입 추가)
   - [ ] 3.8 회고 화면 구현
     - `src/screens/ReflectionScreen.tsx` 작성
       - 상단: 오늘의 한 줄 입력창
