@@ -32,21 +32,21 @@
 - `src/navigation/BottomTabNavigator.tsx` - 하단 탭 바 (홈, 검색, 회고, 설정)
 
 **타입 정의**
-- `src/types/index.ts` - Note, Relation, Keyword, Reflection 등 공통 타입
-- `src/types/database.ts` - SQLite 관련 타입
-- `src/types/sync.ts` - 동기화 관련 타입
-- `src/types/api.ts` - API 요청/응답 타입
+- `src/types/index.ts` - Note, Relation, Keyword, Reflection 등 공통 타입, Input/Filter 타입
+- `src/types/database.ts` - SQLite 관련 타입, DatabaseError 클래스
+- `src/types/sync.ts` - 동기화 프로토콜 타입 (SyncBatch, Delta, ConflictLog 등)
+- `src/types/api.ts` - API 요청/응답 타입 (Login, Token, Recommendation, WeeklyReport 등)
 
 **상수**
 - `src/constants/colors.ts` - 컬러 팔레트 (라이트/다크 모드)
-- `src/constants/database.ts` - DB 스키마 상수
+- `src/constants/database.ts` - DB 관련 상수 (테이블명, 인덱스명, 동기화 설정, 검색 설정)
 - `src/constants/api.ts` - API 엔드포인트 URL
 
 **데이터베이스 서비스**
-- `src/services/database/schema.ts` - SQLite 스키마 정의 및 생성
-- `src/services/database/schema.test.ts` - 스키마 생성 테스트
+- `src/services/database/schema.ts` - SQLite 스키마 정의 및 생성 (테이블, FTS5, 트리거, 인덱스, PRAGMA)
+- `src/services/database/schema.test.ts` - 스키마 생성 및 무결성 제약 테스트
 - `src/services/database/migrations.ts` - DB 마이그레이션 로직
-- `src/services/database/connection.ts` - DB 연결 관리 (싱글톤)
+- `src/services/database/connection.ts` - DB 연결 관리 (싱글톤, 트랜잭션 지원)
 - `src/services/database/notes.ts` - 노트 CRUD 함수
 - `src/services/database/notes.test.ts` - 노트 CRUD 테스트
 - `src/services/database/search.ts` - FTS5 검색 로직
@@ -266,20 +266,20 @@
 ### Phase 2: 모바일 앱 - 로컬 데이터베이스 및 오프라인 기능 구현
 
 - [ ] **2.0 모바일 앱 - 로컬 데이터베이스 및 오프라인 기능 구현**
-  - [ ] 2.1 SQLite 스키마 정의 및 생성
-    - `src/services/database/schema.ts` 작성
-      - `CREATE TABLE notes` (id, body, importance, source_url, image_path, created_at, updated_at, deleted_at)
-      - `CREATE TABLE keywords` (id, name, created_at)
-      - `CREATE TABLE note_keywords` (note_id, keyword_id, weight, source, created_at)
-      - `CREATE TABLE relations` (id, from_note_id, to_note_id, relation_type, rationale, source, created_at)
-      - `CREATE TABLE reflections` (id, content, date, created_at, updated_at)
-      - `CREATE TABLE weekly_reports` (id, week_key, summary, top_keywords, created_at)
-      - `CREATE TABLE change_log` (id, entity_type, entity_id, operation, payload, client_timestamp, synced_at, retry_count, last_error, created_at)
-      - `CREATE TABLE sync_state` (key, value, updated_at)
-      - `CREATE TABLE search_history` (id, query, searched_at)
-      - 인덱스 생성: `idx_notes_updated_at`, `idx_notes_importance`, `idx_notes_deleted`
-    - PRAGMA 설정: `journal_mode=WAL`, `foreign_keys=ON`, `cache_size=-64000`
-    - 스키마 생성 함수 작성 및 테스트
+  - [x] 2.1 SQLite 스키마 정의 및 생성
+    - `src/types/index.ts` 작성: Note, Keyword, Relation, Reflection 등 모든 엔티티 타입 정의
+    - `src/types/database.ts` 작성: SQLite 관련 타입 및 에러 클래스
+    - `src/types/sync.ts` 작성: 동기화 프로토콜 타입
+    - `src/types/api.ts` 작성: API 요청/응답 타입
+    - `src/constants/database.ts` 작성: DB 관련 상수 (테이블명, 인덱스명, 동기화 설정)
+    - `src/services/database/schema.ts` 작성 완료
+      - 모든 테이블 CREATE 문 정의 (notes, keywords, note_keywords, relations, reflections, weekly_reports, change_log, sync_state, search_history)
+      - FTS5 가상 테이블 및 트리거 생성 (notes_fts, notes_ai, notes_ad, notes_au)
+      - 인덱스 생성: `idx_notes_updated_at`, `idx_notes_importance`, `idx_notes_deleted`, `idx_change_log_synced`, `idx_change_log_entity`, `idx_note_keywords_note`, `idx_relations_from`, `idx_relations_to`
+      - PRAGMA 설정: `journal_mode=WAL`, `foreign_keys=ON`, `cache_size=-64000`, `temp_store=MEMORY`, `synchronous=NORMAL`
+      - 스키마 생성 함수: `initializeSchema()`, `verifySchema()`, `dropAllTables()`
+    - `src/services/database/connection.ts` 작성: 싱글톤 DB 연결 관리자, 트랜잭션 지원
+    - `src/services/database/schema.test.ts` 작성: 스키마 생성 및 무결성 제약 테스트
   - [ ] 2.2 FTS5 검색 인덱스 설정
     - `CREATE VIRTUAL TABLE notes_fts USING fts5(body, content='notes', tokenize='unicode61 remove_diacritics 2')`
     - FTS5 동기화 트리거 생성: `notes_ai`, `notes_ad`, `notes_au`
