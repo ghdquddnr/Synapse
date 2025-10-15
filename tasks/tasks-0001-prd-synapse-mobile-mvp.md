@@ -82,7 +82,7 @@
 - `src/store/syncStore.ts` - 동기화 상태 (진행률, 에러)
 
 **React Query Hooks**
-- `src/hooks/useNotes.ts` - 노트 CRUD hooks
+- `src/hooks/useNotes.ts` - 노트 CRUD hooks (useNote, useNotes, useTodayNotes, useNotesCount, useCreateNote, useUpdateNote, useDeleteNote)
 - `src/hooks/useSync.ts` - 동기화 hooks
 - `src/hooks/useRecommendations.ts` - 추천 hooks
 - `src/hooks/useSearch.ts` - 검색 hooks
@@ -408,25 +408,34 @@
       - 미동기화 표시 (빨간 점) ✅
       - 삭제 버튼 (onDelete prop) ✅
     - 각 컴포넌트 테스트 작성 ✅ (29/29 테스트 통과)
-  - [ ] 3.5 홈 화면 구현
-    - `src/screens/HomeScreen.tsx` 작성
-      - 상단: NoteInput 컴포넌트
-      - 중간: 옵션 영역 (접기/펼치기)
-      - 하단: 오늘의 노트 목록 (FlatList + NoteCard)
-      - Pull-to-refresh 구현
-    - `src/hooks/useNotes.ts` 작성: 노트 CRUD React Query hooks
-    - 화면 테스트 작성
-  - [ ] 3.6 노트 상세 화면 구현
-    - `src/screens/NoteDetailScreen.tsx` 작성
-      - 헤더: 뒤로 가기, 편집, 메뉴 (삭제 등)
-      - 본문 표시 (편집 모드 전환 가능)
-      - 메타데이터: 중요도, 생성일, 수정일
-      - 키워드 섹션
-      - 수동 연결 섹션 (RelationList)
-      - AI 추천 섹션 (RecommendationCard)
-    - `src/components/RelationList.tsx` 작성: 연결 목록 및 추가/삭제
-    - `src/components/RecommendationCard.tsx` 작성: 추천 노트 카드 (스코어, 이유 표시)
-    - 화면 테스트 작성
+  - [x] 3.5 홈 화면 구현
+    - `src/screens/HomeScreen.tsx` 작성 ✅
+      - 상단: NoteInput 컴포넌트 ✅
+      - 중간: 옵션 영역 (접기/펼치기) ✅
+      - 하단: 오늘의 노트 목록 (FlatList + NoteCard) ✅
+      - Pull-to-refresh 구현 ✅
+    - `src/hooks/useNotes.ts` 작성: 노트 CRUD React Query hooks ✅
+    - 화면 테스트 작성 ✅ (14/14 테스트 통과)
+  - [x] 3.6 노트 상세 화면 구현
+    - `src/screens/NoteDetailScreen.tsx` 작성 ✅
+      - 헤더: 뒤로 가기, 편집, 메뉴 (삭제 등) ✅
+      - 본문 표시 (편집 모드 전환 가능) ✅
+      - 메타데이터: 중요도, 생성일, 수정일 ✅
+      - 키워드 섹션 ✅
+      - 수동 연결 섹션 (RelationList) ✅
+      - AI 추천 섹션 (RecommendationCard) ✅
+    - `src/components/RelationList.tsx` 작성: 연결 목록 및 추가/삭제 ✅
+    - `src/components/RecommendationCard.tsx` 작성: 추천 노트 카드 (스코어, 이유 표시) ✅
+    - `src/hooks/useRelations.ts` 작성: 연결 CRUD React Query hooks ✅
+    - 화면 테스트 작성 ✅ (32/32 테스트 통과)
+    - **Relevant Files**:
+      - `mobile/src/screens/NoteDetailScreen.tsx` (새로 생성)
+      - `mobile/src/screens/NoteDetailScreen.test.tsx` (새로 생성)
+      - `mobile/src/components/RelationList.tsx` (새로 생성)
+      - `mobile/src/components/RecommendationCard.tsx` (새로 생성)
+      - `mobile/src/hooks/useRelations.ts` (새로 생성)
+      - `mobile/src/navigation/RootNavigator.tsx` (수정됨)
+      - `mobile/src/screens/HomeScreen.tsx` (수정됨)
   - [ ] 3.7 검색 화면 구현
     - `src/screens/SearchScreen.tsx` 작성
       - 상단: SearchBar 컴포넌트
