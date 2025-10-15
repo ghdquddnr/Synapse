@@ -45,12 +45,12 @@
 **데이터베이스 서비스**
 - `src/services/database/schema.ts` - SQLite 스키마 정의 및 생성 (테이블, FTS5, 트리거, 인덱스, PRAGMA)
 - `src/services/database/schema.test.ts` - 스키마 생성 및 무결성 제약 테스트
-- `src/services/database/migrations.ts` - DB 마이그레이션 로직
 - `src/services/database/connection.ts` - DB 연결 관리 (싱글톤, 트랜잭션 지원)
+- `src/services/database/search.ts` - FTS5 검색 로직 (검색, 검색 기록, 자동완성)
+- `src/services/database/search.test.ts` - 검색 기능 및 FTS5 통합 테스트
+- `src/services/database/migrations.ts` - DB 마이그레이션 로직
 - `src/services/database/notes.ts` - 노트 CRUD 함수
 - `src/services/database/notes.test.ts` - 노트 CRUD 테스트
-- `src/services/database/search.ts` - FTS5 검색 로직
-- `src/services/database/search.test.ts` - 검색 테스트
 - `src/services/database/relations.ts` - 연결 관리 함수
 - `src/services/database/relations.test.ts` - 연결 테스트
 - `src/services/database/reflections.ts` - 회고 CRUD 함수
@@ -280,11 +280,17 @@
       - 스키마 생성 함수: `initializeSchema()`, `verifySchema()`, `dropAllTables()`
     - `src/services/database/connection.ts` 작성: 싱글톤 DB 연결 관리자, 트랜잭션 지원
     - `src/services/database/schema.test.ts` 작성: 스키마 생성 및 무결성 제약 테스트
-  - [ ] 2.2 FTS5 검색 인덱스 설정
-    - `CREATE VIRTUAL TABLE notes_fts USING fts5(body, content='notes', tokenize='unicode61 remove_diacritics 2')`
-    - FTS5 동기화 트리거 생성: `notes_ai`, `notes_ad`, `notes_au`
-    - 검색 쿼리 함수 작성: `searchNotes(query: string): Promise<Note[]>`
-    - 검색어 하이라이팅 함수 작성: `snippet(notes_fts, ...)`
+  - [x] 2.2 FTS5 검색 인덱스 설정
+    - FTS5 가상 테이블 생성 완료 (2.1에서 구현)
+    - FTS5 동기화 트리거 생성 완료: `notes_ai`, `notes_ad`, `notes_au` (2.1에서 구현)
+    - `src/services/database/search.ts` 작성 완료:
+      - `searchNotes()`: FTS5 검색 with snippet 하이라이팅 및 ranking
+      - `saveSearchHistory()`: 검색 기록 저장 및 자동 정리
+      - `getSearchHistory()`: 최근 검색 기록 조회
+      - `clearSearchHistory()`: 검색 기록 전체 삭제
+      - `getSearchSuggestions()`: 자동완성 제안
+      - `countSearchResults()`: 검색 결과 개수 조회
+    - `src/services/database/search.test.ts` 작성: 검색 기능 및 FTS5 통합 테스트
   - [ ] 2.3 데이터베이스 연결 관리
     - `src/services/database/connection.ts` 작성
     - 싱글톤 패턴으로 DB 연결 관리
