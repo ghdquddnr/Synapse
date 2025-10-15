@@ -16,10 +16,16 @@ from app.database import Base
 
 # Import all models here to ensure they're registered with Base.metadata
 # This is required for autogenerate to detect model changes
-# from app.models.user import User
-# from app.models.note import Note
-# from app.models.keyword import Keyword
-# ... import other models as they're created
+from app.models import (
+    User,
+    Note,
+    Keyword,
+    NoteKeyword,
+    Relation,
+    Reflection,
+    WeeklyReport,
+    Device,
+)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -1,16 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git init:*)",
-      "Bash(git remote add:*)",
-      "Bash(git branch:*)",
-      "Bash(git add:*)",
-      "Bash(if [ -d .git ])",
-      "Bash(then rm -rf .git)",
-      "Bash(else echo \"No .git in mobile/\")",
-      "Bash(fi)",
-      "Bash(git rm:*)",
-      "Bash(git reset:*)"
+      "Bash(./venv/Scripts/python:*)",
+      "Bash(./venv/Scripts/pip uninstall:*)"
     ],
     "deny": [],
     "ask": []
