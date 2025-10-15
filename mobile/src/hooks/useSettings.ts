@@ -2,10 +2,12 @@
  * React Query hooks for app settings and statistics
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { getNotesCount } from '@/services/database/notes';
 import { getReflectionCount } from '@/services/database/reflections';
 import { getRelationCount } from '@/services/database/relations';
+import { syncOrchestrator } from '@/services/sync/orchestrator';
+import { useSyncStore } from '@/store/syncStore';
 
 // Query keys
 const QUERY_KEYS = {
@@ -54,26 +56,49 @@ export function useRelationsCount() {
 
 /**
  * Hook for sync status
- * Placeholder for Phase 6 implementation
+ * Uses Zustand sync store
  */
 export function useSyncStatus() {
+  const status = useSyncStore((state) => state.status);
+  const lastSyncTime = useSyncStore((state) => state.lastSyncTime);
+  const error = useSyncStore((state) => state.error);
+
   return {
-    lastSyncedAt: null,
-    isSyncing: false,
-    syncError: null,
+    lastSyncedAt: lastSyncTime ? new Date(lastSyncTime).toISOString() : null,
+    isSyncing: status === 'syncing',
+    syncError: error?.message || null,
   };
 }
 
 /**
  * Hook to trigger manual sync
- * Placeholder for Phase 6 implementation
+ * Uses sync orchestrator and updates sync store
  */
 export function useTriggerSync() {
-  return {
-    triggerSync: async () => {
-      // TODO: Implement in Phase 6
-      console.log('Sync triggered (placeholder)');
+  const setStatus = useSyncStore((state) => state.setStatus);
+  const handleSyncResult = useSyncStore((state) => state.handleSyncResult);
+  const status = useSyncStore((state) => state.status);
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      setStatus('syncing');
+      const result = await syncOrchestrator.manualSync();
+      return result;
     },
-    isSyncing: false,
+    onSuccess: (result) => {
+      handleSyncResult(result);
+    },
+    onError: (error) => {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      handleSyncResult({
+        success: false,
+        error: errorMessage,
+      });
+    },
+  });
+
+  return {
+    triggerSync: mutation.mutateAsync,
+    isSyncing: status === 'syncing' || mutation.isPending,
   };
 }

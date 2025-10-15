@@ -27,10 +27,16 @@ import {
 } from '@/hooks/useSettings';
 import { Colors } from '@/constants/colors';
 
+import { useSyncStore } from '@/store/syncStore';
+
 export default function SettingsScreen() {
   // Sync status
   const syncStatus = useSyncStatus();
   const { triggerSync, isSyncing } = useTriggerSync();
+
+  // Sync store for auto-sync toggle
+  const autoSyncEnabled = useSyncStore((state) => state.autoSyncEnabled);
+  const setAutoSyncEnabled = useSyncStore((state) => state.setAutoSyncEnabled);
 
   // Stats
   const { data: notesCount = 0 } = useNotesCount();
@@ -38,7 +44,6 @@ export default function SettingsScreen() {
   const { data: relationsCount = 0 } = useRelationsCount();
 
   // Local state for toggles (placeholder for future implementation)
-  const [autoSyncEnabled, setAutoSyncEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
   // Handle manual sync
