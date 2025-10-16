@@ -157,3 +157,13 @@ export async function withTransaction(
 ): Promise<void> {
   return dbManager.executeTransaction(callback);
 }
+
+// Convenience function to close database
+export async function closeDatabase(): Promise<void> {
+  return dbManager.closeDatabase();
+}
+
+// Convenience function to reset database (for testing)
+export async function resetDatabase(): Promise<void> {
+  return dbManager.resetDatabase();
+}

@@ -71,7 +71,7 @@ export async function logConflict(
 
   const resolvedAt = new Date().toISOString();
 
-  await db.execAsync(
+  await db.runAsync(
     `INSERT INTO conflict_log (entity_type, entity_id, local_data, remote_data, resolution, resolved_at)
      VALUES (?, ?, ?, ?, ?, ?)`,
     [

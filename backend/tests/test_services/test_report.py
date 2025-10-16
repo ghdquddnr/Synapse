@@ -175,9 +175,10 @@ class TestReportService:
         summary = service._extract_cluster_summary(notes, cluster_id=0)
 
         assert summary.cluster_id == 0
-        assert summary.note_count == 3
+        assert summary.size == 3
         assert len(summary.top_keywords) > 0
-        assert len(summary.representative_text) > 0
+        assert len(summary.representative_sentence) > 0
+        assert len(summary.note_ids) == 3
 
     def test_aggregate_keywords(self, service, test_user, db_session):
         """Test keyword aggregation."""
@@ -211,9 +212,9 @@ class TestReportService:
 
         # kw1 should have higher count than kw2
         assert len(keyword_counts) == 2
-        assert keyword_counts[0].keyword == "머신러닝"
+        assert keyword_counts[0].name == "머신러닝"
         assert keyword_counts[0].count == 5
-        assert keyword_counts[1].keyword == "딥러닝"
+        assert keyword_counts[1].name == "딥러닝"
         assert keyword_counts[1].count == 2
 
     def test_identify_new_keywords_no_previous_week(
@@ -246,8 +247,8 @@ class TestReportService:
 
         # Should suggest connection due to high similarity
         if len(connections) > 0:
-            assert connections[0].note_id_1 == "note-1"
-            assert connections[0].note_id_2 == "note-2"
+            assert connections[0].from_note_id == "note-1"
+            assert connections[0].to_note_id == "note-2"
             assert connections[0].similarity_score > service.connection_similarity_threshold
 
     def test_suggest_connections_low_similarity(self, service, test_user):
@@ -277,18 +278,22 @@ class TestReportService:
 
     def test_generate_weekly_report_success(self, service, test_user, db_session):
         """Test successful report generation."""
-        # Get current week
-        now = datetime.utcnow()
-        week_key = now.strftime("%Y-%W")
+        # Use a fixed date in week 1 of 2025 to avoid ISO week boundary issues
+        # ISO week 1 of 2025 starts on Monday, December 30, 2024
+        test_date = datetime(2025, 1, 6)  # Monday of week 2
+        week_key = "2025-02"  # Week 2 of 2025
 
-        # Create notes for current week with embeddings
+        # Expected API format with W prefix
+        expected_week_key = "2025-W02"
+
+        # Create notes for this specific week with embeddings
         for i in range(5):
             note = Note(
                 id=f"note-{i}",
                 user_id=test_user.id,
                 body=f"Note {i} content",
                 embedding=np.random.rand(1024).tolist(),
-                created_at=now - timedelta(days=i),
+                created_at=test_date + timedelta(hours=i),  # All in same day
             )
             db_session.add(note)
 
@@ -301,11 +306,14 @@ class TestReportService:
             week_key=week_key,
         )
 
-        # Verify report structure
-        assert report.week_key == week_key
-        assert report.report.total_notes == 5
-        assert len(report.report.clusters) > 0
-        assert isinstance(report.processing_time_ms, int)
+        # Verify report structure (response uses API format YYYY-WNN)
+        assert report.user_id == test_user.id
+        assert report.week_key == expected_week_key
+        assert report.data.total_notes == 5
+        assert len(report.data.clusters) > 0
+        assert report.summary is not None
+        assert len(report.summary) > 0
+        assert report.created_at is not None
 
 
 class TestGetReportService:

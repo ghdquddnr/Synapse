@@ -196,7 +196,7 @@ describe('SearchScreen', () => {
       }, { timeout: 500 });
     });
 
-    it('should display loading spinner while searching', () => {
+    it('should display loading spinner while searching', async () => {
       (searchService.searchNotes as jest.Mock).mockImplementation(
         () => new Promise(() => {}) // Never resolves
       );
@@ -207,7 +207,9 @@ describe('SearchScreen', () => {
       fireEvent.changeText(searchInput, 'test');
 
       // Loading indicator should be visible
-      expect(screen.queryByTestId('search-loading')).toBeTruthy();
+      await waitFor(() => {
+        expect(screen.queryByTestId('search-loading')).toBeTruthy();
+      });
     });
 
     it('should display search result with highlighted text', async () => {

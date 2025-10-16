@@ -1,31 +1,49 @@
-# Development override for docker-compose
-# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
-
 services:
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: builder  # Use builder stage for development
-    command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-    environment:
-      DEBUG: "true"
-      LOG_LEVEL: DEBUG
-    volumes:
-      # Mount source code for hot reload
-      - ./app:/app/app:delegated
-      - ./tests:/app/tests:delegated
-      - ./alembic:/app/alembic:delegated
-    ports:
-      - "8000:8000"
-      - "5678:5678"  # debugpy port
-
+  # PostgreSQL database with pgvector extension
   db:
+    image: ankane/pgvector:latest
+    container_name: synapse-db
+    environment:
+      POSTGRES_DB: synapse
+      POSTGRES_USER: synapse
+      POSTGRES_PASSWORD: synapse
+      POSTGRES_INITDB_ARGS: "-E UTF8"
     ports:
       - "5432:5432"
-    # Expose PostgreSQL for direct access during development
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U synapse -d synapse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - synapse-network
 
+  # Redis cache
   redis:
+    image: redis:7-alpine
+    container_name: synapse-redis
     ports:
       - "6379:6379"
-    # Expose Redis for direct access during development
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - synapse-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  synapse-network:
+    driver: bridge

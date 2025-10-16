@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { NavigationContainer } from '@react-navigation/native';
 import { Alert } from 'react-native';
 import HomeScreen from './HomeScreen';
 import * as notesService from '@/services/database/notes';
@@ -11,6 +12,20 @@ jest.mock('@/services/database/notes');
 jest.mock('react-native/Libraries/Alert/Alert', () => ({
   alert: jest.fn(),
 }));
+
+// Mock navigation
+const mockNavigate = jest.fn();
+jest.mock('@react-navigation/native', () => {
+  const actualNav = jest.requireActual('@react-navigation/native');
+  return {
+    ...actualNav,
+    useNavigation: () => ({
+      navigate: mockNavigate,
+      goBack: jest.fn(),
+      setOptions: jest.fn(),
+    }),
+  };
+});
 
 // Test data
 const mockNote: Note = {
@@ -50,7 +65,9 @@ const renderWithClient = (ui: React.ReactElement) => {
   const testQueryClient = createTestQueryClient();
   return {
     ...render(
-      <QueryClientProvider client={testQueryClient}>{ui}</QueryClientProvider>
+      <NavigationContainer>
+        <QueryClientProvider client={testQueryClient}>{ui}</QueryClientProvider>
+      </NavigationContainer>
     ),
     queryClient: testQueryClient,
   };
@@ -59,6 +76,7 @@ const renderWithClient = (ui: React.ReactElement) => {
 describe('HomeScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockNavigate.mockClear();
   });
 
   describe('렌더링', () => {

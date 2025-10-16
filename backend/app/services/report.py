@@ -58,13 +58,13 @@ class ReportService:
             year_str, week_str = week_key.split("-")
             year = int(year_str)
             week = int(week_str)
-
-            if not (1 <= week <= 53):
-                raise ValueError(f"Week number must be 1-53, got {week}")
-
-            return year, week
         except (ValueError, AttributeError) as e:
             raise ValueError(f"Invalid week key format. Expected YYYY-WW, got {week_key}") from e
+
+        if not (1 <= week <= 53):
+            raise ValueError(f"Week number must be 1-53, got {week}")
+
+        return year, week
 
     def _get_week_date_range(self, week_key: str) -> Tuple[datetime, datetime]:
         """
@@ -158,8 +158,8 @@ class ReportService:
         # Get all keywords from cluster notes
         all_keywords = []
         for note in cluster_notes:
-            if note.keywords:
-                all_keywords.extend([kw.keyword.name for kw in note.keywords])
+            if note.note_keywords:
+                all_keywords.extend([kw.keyword.name for kw in note.note_keywords])
 
         # Count keyword frequencies
         keyword_counts = Counter(all_keywords)
@@ -171,9 +171,10 @@ class ReportService:
 
         return ClusterSummary(
             cluster_id=cluster_id,
-            note_count=len(cluster_notes),
+            size=len(cluster_notes),
             top_keywords=top_keywords,
-            representative_text=representative_text,
+            representative_sentence=representative_text,
+            note_ids=[note.id for note in cluster_notes],
         )
 
     def _aggregate_keywords(self, notes: List[Note]) -> List[KeywordCount]:
@@ -189,13 +190,13 @@ class ReportService:
         keyword_counts = Counter()
 
         for note in notes:
-            if note.keywords:
-                for note_kw in note.keywords:
+            if note.note_keywords:
+                for note_kw in note.note_keywords:
                     keyword_counts[note_kw.keyword.name] += 1
 
         # Convert to KeywordCount objects
         keyword_list = [
-            KeywordCount(keyword=kw, count=count)
+            KeywordCount(name=kw, count=count)
             for kw, count in keyword_counts.most_common(self.top_keywords_count)
         ]
 
@@ -235,8 +236,8 @@ class ReportService:
             # Extract previous week's keywords
             prev_keywords = set()
             for note in prev_notes:
-                if note.keywords:
-                    prev_keywords.update([kw.keyword.name for kw in note.keywords])
+                if note.note_keywords:
+                    prev_keywords.update([kw.keyword.name for kw in note.note_keywords])
 
             # Find new keywords
             new_keywords = [kw for kw in current_keywords if kw not in prev_keywords]
@@ -275,8 +276,8 @@ class ReportService:
                 if similarity >= self.connection_similarity_threshold:
                     connections.append(
                         PotentialConnection(
-                            note_id_1=notes[i].id,
-                            note_id_2=notes[j].id,
+                            from_note_id=notes[i].id,
+                            to_note_id=notes[j].id,
                             similarity_score=float(similarity),
                             reason=f"높은 유사도 ({similarity:.2f})",
                         )
@@ -295,7 +296,7 @@ class ReportService:
         Args:
             db: Database session
             user_id: User ID
-            week_key: Week identifier (YYYY-WW format)
+            week_key: Week identifier (YYYY-WW or YYYY-NN format)
 
         Returns:
             WeeklyReportResponse with insights and metadata
@@ -306,8 +307,15 @@ class ReportService:
         logger.info(f"Generating weekly report for user {user_id}, week {week_key}")
         start_time = datetime.utcnow()
 
+        # Convert week_key to internal format (YYYY-NN) if needed
+        internal_week_key = week_key.replace("-W", "-") if "-W" in week_key else week_key
+
+        # Convert internal format to API format (YYYY-WNN)
+        year, week = self._parse_week_key(internal_week_key)
+        api_week_key = f"{year}-W{week:02d}"
+
         # Get week date range
-        week_start, week_end = self._get_week_date_range(week_key)
+        week_start, week_end = self._get_week_date_range(internal_week_key)
 
         # Fetch notes for the week
         notes = (
@@ -341,31 +349,55 @@ class ReportService:
         top_keywords = self._aggregate_keywords(notes)
 
         # Identify new keywords (compare with previous week)
-        current_keywords = [kw.keyword for kw in top_keywords]
-        year, week = self._parse_week_key(week_key)
+        current_keywords = [kw.name for kw in top_keywords]
         prev_week = week - 1 if week > 1 else 52
         prev_year = year if week > 1 else year - 1
         prev_week_key = f"{prev_year}-{prev_week:02d}"
         new_keywords = self._identify_new_keywords(current_keywords, prev_week_key, user_id, db)
 
+        # Calculate recurring keywords (keywords not in new_keywords)
+        recurring_keywords = [kw for kw in current_keywords if kw not in new_keywords]
+
         # Suggest potential connections
         potential_connections = self._suggest_connections(notes, embeddings)
 
+        # Count total unique keywords from all notes
+        all_keywords = set()
+        for note in notes:
+            if note.note_keywords:
+                all_keywords.update([kw.keyword.name for kw in note.note_keywords])
+
         # Create report data
         report_data = WeeklyReportData(
-            week_key=week_key,
             total_notes=len(notes),
+            total_keywords=len(all_keywords),
             clusters=cluster_summaries,
             top_keywords=top_keywords,
             new_keywords=new_keywords,
+            recurring_keywords=recurring_keywords,
             potential_connections=potential_connections,
-            generated_at=datetime.utcnow(),
         )
 
-        # Save to database
+        # Generate human-readable summary
+        summary_parts = [
+            f"이번 주에 {len(notes)}개의 노트를 작성했습니다.",
+            f"{len(cluster_summaries)}개의 주제 클러스터로 분류되었습니다.",
+        ]
+        if top_keywords:
+            top_kw_names = [kw.name for kw in top_keywords[:5]]
+            summary_parts.append(f"주요 키워드: {', '.join(top_kw_names)}")
+        if new_keywords:
+            summary_parts.append(f"{len(new_keywords)}개의 새로운 키워드가 발견되었습니다.")
+        if potential_connections:
+            summary_parts.append(f"{len(potential_connections)}개의 노트 간 연결을 제안합니다.")
+
+        summary = " ".join(summary_parts)
+
+        # Save to database (use API format YYYY-WNN)
         db_report = WeeklyReport(
             user_id=user_id,
-            week_key=week_key,
+            week_key=api_week_key,
+            summary=summary,
             data=report_data.model_dump(),  # Store as JSON
         )
         db.add(db_report)
@@ -374,15 +406,22 @@ class ReportService:
         processing_time = (datetime.utcnow() - start_time).total_seconds() * 1000
 
         logger.info(
-            f"Generated weekly report for week {week_key}: "
+            f"Generated weekly report for week {api_week_key}: "
             f"{len(notes)} notes, {len(cluster_summaries)} clusters, "
             f"in {processing_time:.1f}ms"
         )
 
+        # Refresh to load the created_at field
+        db.refresh(db_report)
+
+        # Return response with date conversion
         return WeeklyReportResponse(
-            week_key=week_key,
-            report=report_data,
-            processing_time_ms=int(processing_time),
+            id=db_report.id,
+            user_id=db_report.user_id,
+            week_key=db_report.week_key,
+            summary=db_report.summary,
+            data=WeeklyReportData.model_validate(db_report.data),
+            created_at=db_report.created_at.date(),  # Convert datetime to date
         )
 
 

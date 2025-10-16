@@ -17,6 +17,9 @@ describe('networkMonitor', () => {
     jest.clearAllMocks();
     mockUnsubscribe = jest.fn();
     mockNetInfo.addEventListener.mockReturnValue(mockUnsubscribe);
+
+    // Reset networkMonitor state by cleaning up
+    networkMonitor.cleanup();
   });
 
   describe('initialize()', () => {
@@ -31,8 +34,15 @@ describe('networkMonitor', () => {
       const onConnected = jest.fn();
       networkMonitor.initialize({ onConnected });
 
-      // Simulate network state change to connected
       const listener = mockNetInfo.addEventListener.mock.calls[0][0];
+
+      // First simulate offline state to set isOnline = false
+      listener({
+        isConnected: false,
+        isInternetReachable: false,
+      } as NetInfoState);
+
+      // Then simulate network state change to connected
       listener({
         isConnected: true,
         isInternetReachable: true,

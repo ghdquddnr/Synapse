@@ -11,6 +11,7 @@ export const TABLE_RELATIONS = 'relations';
 export const TABLE_REFLECTIONS = 'reflections';
 export const TABLE_WEEKLY_REPORTS = 'weekly_reports';
 export const TABLE_CHANGE_LOG = 'change_log';
+export const TABLE_CONFLICT_LOG = 'conflict_log';
 export const TABLE_SYNC_STATE = 'sync_state';
 export const TABLE_SEARCH_HISTORY = 'search_history';
 export const TABLE_NOTES_FTS = 'notes_fts';

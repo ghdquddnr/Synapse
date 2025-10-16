@@ -129,8 +129,9 @@ describe('Conflict Resolution - shouldUpdate()', () => {
 
 describe('Conflict Resolution - Database Operations', () => {
   beforeEach(async () => {
-    await dropAllTables();
-    await initializeSchema();
+    const db = await getDatabase();
+    await dropAllTables(db);
+    await initializeSchema(db);
   });
 
   afterAll(async () => {
@@ -162,7 +163,9 @@ describe('Conflict Resolution - Database Operations', () => {
 
     it('should handle multiple conflict logs', async () => {
       await logConflict('note', '1', { id: '1' }, { id: '1' }, 'remote_wins');
+      await new Promise((resolve) => setTimeout(resolve, 10)); // Ensure time difference
       await logConflict('note', '2', { id: '2' }, { id: '2' }, 'local_wins');
+      await new Promise((resolve) => setTimeout(resolve, 10));
       await logConflict('relation', '3', { id: '3' }, { id: '3' }, 'remote_wins');
 
       const logs = await getConflictLogs(10);
@@ -368,7 +371,7 @@ describe('Conflict Resolution - Database Operations', () => {
       oldDate.setDate(oldDate.getDate() - 31);
       const oldISO = oldDate.toISOString();
 
-      await db.execAsync(
+      await db.runAsync(
         `INSERT INTO conflict_log (entity_type, entity_id, local_data, remote_data, resolution, resolved_at)
          VALUES (?, ?, ?, ?, ?, ?)`,
         ['note', '1', '{}', '{}', 'remote_wins', oldISO]

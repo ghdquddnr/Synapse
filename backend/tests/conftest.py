@@ -24,7 +24,13 @@ engine = create_engine(
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Test-only password context with simpler bcrypt rounds to avoid bcrypt bugs
-test_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=4)
+# Use 2b ident to avoid bcrypt wrap bug detection issues
+test_pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto",
+    bcrypt__rounds=4,
+    bcrypt__default_ident="2b",
+)
 
 
 @pytest.fixture
@@ -81,15 +87,44 @@ def test_db():
         Base.metadata.drop_all(bind=engine)
 
 
+@pytest.fixture(autouse=True)
+def skip_password_hash(request, monkeypatch):
+    """
+    Auto-applied fixture to bypass bcrypt hashing in tests.
+
+    bcrypt has environment-specific issues in Windows test environments,
+    particularly with the wrap bug detection. This fixture replaces
+    hash_password and verify_password with simple mock implementations.
+
+    Skip this fixture for test_security.py to allow actual bcrypt testing.
+    """
+    # Skip for security tests
+    if "test_security" in request.node.fspath.basename:
+        return
+
+    from app.core import security
+
+    def mock_hash_password(password: str) -> str:
+        """Mock hash that just prefixes password"""
+        return f"hashed_{password}"
+
+    def mock_verify_password(plain: str, hashed: str) -> bool:
+        """Mock verify that checks prefix"""
+        return hashed == f"hashed_{plain}"
+
+    monkeypatch.setattr(security, "hash_password", mock_hash_password)
+    monkeypatch.setattr(security, "verify_password", mock_verify_password)
+
+
 @pytest.fixture
 def test_user(db, client):
     """Test user fixture with access token"""
-    # Use a short password that won't trigger bcrypt's wrap bug
-    # bcrypt has issues in test environment, so we use minimal password
-    test_password = "testpass"
+    # Use simple password - hashing is mocked by skip_password_hash
+    test_password = "test1234"
 
-    # Use test-only password context with lower rounds
-    hashed = test_pwd_context.hash(test_password)
+    # hash_password is mocked to return "hashed_{password}"
+    from app.core.security import hash_password
+    hashed = hash_password(test_password)
 
     user = User(
         id="01234567-89ab-cdef-0123-456789abcdef",

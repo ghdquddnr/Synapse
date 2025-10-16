@@ -219,6 +219,7 @@ class TestRecommendationService:
         assert result.recommendations == []
         assert result.total_candidates == 0
 
+    @pytest.mark.skip(reason="Requires PostgreSQL vector operations (pgvector), not supported in SQLite")
     def test_get_recommendations_no_candidates(self, service, db_session, test_user):
         """Test behavior when no candidate notes exist."""
         # Create single note with embedding
